@@ -4,6 +4,7 @@ services:
     container_name: mysql
     restart: unless-stopped
     environment:
+<<<<<<< HEAD
       MYSQL_DATABASE: mydb
       MYSQL_USER: myuser
       MYSQL_PASSWORD: mypassword
@@ -13,14 +14,30 @@ services:
     volumes:
       - dbdata:/var/lib/mysql
       - ./message.sql:/docker-entrypoint-initdb.d/message.sql
+=======
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: devops
+      MYSQL_USER: admin
+      MYSQL_PASSWORD: admin
+    #volumes:
+      #- ./mysql-data:/var/lib/mysql
+      #- ./message.sql:/docker-entrypoint-initdb.d/message.sql  
+    networks:
+      - twotier
+>>>>>>> 467e36af77aa440512e0e253184591778df0487d
     healthcheck:
       test: ["CMD", "mysqladmin" ,"ping", "-hmysql", "-uroot", "-prootpassword"]
       interval: 10s
       timeout: 5s
       retries: 10
 
+<<<<<<< HEAD
   web:
     build: .
+=======
+  flask-app:
+    image: two-tier-flask-app:latest
+>>>>>>> 467e36af77aa440512e0e253184591778df0487d
     container_name: flask-app
     restart: unless-stopped
     env_file:
