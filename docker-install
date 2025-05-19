@@ -1,0 +1,62 @@
+
+#!/bin/bash
+# Error-free script to install Docker and Docker Compose on Ubuntu (t2.micro EC2, uses current user)
+
+set -e
+
+echo "1. Updating package information..."
+sudo apt-get update -y
+
+echo "2. Installing prerequisites..."
+sudo apt-get install -y \
+    ca-certificates \
+    curl \
+    gnupg \
+    lsb-release \
+    apt-transport-https \
+    software-properties-common
+
+echo "3. Adding Docker's official GPG key..."
+sudo mkdir -p /etc/apt/keyrings
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+
+echo "4. Setting up Docker repository..."
+echo \
+  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+  $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+echo "5. Updating package information (with Docker repo)..."
+sudo apt-get update -y
+
+echo "6. Installing Docker Engine, CLI, and Compose plugin..."
+sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+
+echo "7. Enabling and starting Docker..."
+sudo systemctl enable docker
+sudo systemctl start docker
+
+echo "8. Adding user '$USER' to the 'docker' group..."
+sudo usermod -aG docker "$USER"
+
+# Optionally install standalone Docker Compose binary for full compatibility
+DOCKER_COMPOSE_VERSION="2.24.6"
+if ! command -v docker-compose &>/dev/null; then
+    echo "9. Installing standalone Docker Compose..."
+    sudo curl -L "https://github.com/docker/compose/releases/download/v${DOCKER_COMPOSE_VERSION}/docker-compose-$(uname -s)-$(uname -m)" \
+        -o /usr/local/bin/docker-compose
+    sudo chmod +x /usr/local/bin/docker-compose
+fi
+
+echo "10. Cleaning up..."
+sudo apt-get clean
+
+echo ""
+echo "===================================================================================="
+echo "Docker and Docker Compose installation is complete."
+echo ""
+echo "IMPORTANT: To use Docker as '$USER' without sudo, you MUST log out and log back in,"
+echo "OR run:   newgrp docker"
+echo ""
+echo "Before using 'docker ps' as your regular user, please do one of the above steps."
+echo "===================================================================================="
+
